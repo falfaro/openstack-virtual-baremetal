@@ -45,6 +45,7 @@ create_glance_image CentOS-7-x86_64-GenericCloud CentOS-7-x86_64-GenericCloud.qc
 create_glance_image bmc-base bmc-base.qcow2
 create_nova_flavor bmc 512 20 1
 create_nova_flavor baremetal 4096 20 2
+create_nova_flavor undercloud 8192 30 4
 create_nova_keypair
 
 neutron quota-update --security_group 1000
