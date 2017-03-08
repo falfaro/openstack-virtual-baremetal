@@ -1,6 +1,12 @@
 #!/bin/bash
 set -x
 
+# Inject CA certificate and regenerate certificate store
+cat << EOF > /etc/pki/ca-trust/source/anchors/cacert.pem
+$cacert_file
+EOF
+/usr/bin/update-ca-trust extract
+
 # Also python-crypto, but that requires special handling because we used to
 # install python2-crypto from EPEL
 required_packages="python-pip os-net-config python-novaclient python-neutronclient git jq"
@@ -46,9 +52,9 @@ export OS_PROJECT_DOMAIN_ID=$os__project_domain
 # At some point neutronclient started returning a python list repr from this
 # command instead of just the value.  This sed will strip off the bits we
 # don't care about without messing up the output from older clients.
-private_subnet=$(neutron net-show -f value -c subnets $private_net | sed "s/\[u'\(.*\)'\]/\1/")
-default_gw=$(neutron subnet-show $private_subnet -f value -c gateway_ip)
-prefix_len=$(neutron subnet-show -f value -c cidr $private_subnet | awk -F / '{print $2}')
+private_subnet=$(neutron net-show -f value -c subnets $private_net 2>/dev/null | sed "s/\[u'\(.*\)'\]/\1/")
+default_gw=$(neutron subnet-show $private_subnet -f value -c gateway_ip 2>/dev/null)
+prefix_len=$(neutron subnet-show -f value -c cidr $private_subnet 2>/dev/null | awk -F / '{print $2}')
 
 mkdir /etc/os-net-config
 echo "network_config:" > /etc/os-net-config/config.yaml
@@ -83,13 +89,13 @@ EOF
 for i in $(seq 1 $bm_node_count)
 do
     bm_port="$bm_prefix_$(($i-1))"
-    bm_instance=$(neutron port-show $bm_port -c device_id -f value)
+    bm_instance=$(neutron port-show $bm_port -c device_id -f value 2>/dev/null)
     bmc_port="$bmc_prefix_$(($i-1))"
-    bmc_ip=$(neutron port-show $bmc_port -c fixed_ips -f value | jq -r .ip_address)
+    bmc_ip=$(neutron port-show $bmc_port -c fixed_ips -f value 2>/dev/null | jq -r .ip_address)
     # Newer neutronclient requires explicit json output and a slightly
     # different jq query
     if [ -z "$bmc_ip" ]; then
-        bmc_ip=$(neutron port-show $bmc_port -c fixed_ips -f json | jq -r .fixed_ips[0].ip_address)
+        bmc_ip=$(neutron port-show $bmc_port -c fixed_ips -f json 2>/dev/null | jq -r .fixed_ips[0].ip_address)
     fi
     unit="openstack-bmc-$bm_port.service"
 

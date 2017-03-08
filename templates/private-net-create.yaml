@@ -18,7 +18,7 @@ parameters:
     default: 10.0.1.0/24
 
   dns_nameservers:
-    default: ["8.8.8.8", ]
+    default: ["172.16.0.1", ]
     description: List of DNS servers for the private network
     type: comma_delimited_list
 

@@ -184,6 +184,7 @@ resources:
             $bm_prefix: {get_param: baremetal_prefix}
             $private_net: {get_param: private_net}
             $openstackbmc_script: {get_file: ../bin/openstackbmc}
+            $cacert_file: {get_file: ../cacert.pem}
           template: {get_file: ../bin/install_openstackbmc.sh}
 
   baremetal_networks:
