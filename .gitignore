@@ -8,3 +8,6 @@ cover
 .tox
 *.egg-info
 doc/build
+bmc-base.qcow2
+CentOS-7-x86_64-GenericCloud.qcow2
+fuel.pem
